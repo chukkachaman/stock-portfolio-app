@@ -1,0 +1,57 @@
+{% extends './navbar.html' %}
+{% load static %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History</title>
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen" >
+    <link rel="stylesheet" href="{% static 'stock/css/transactions.css' %}" type="text/css" media="screen" >
+</head>
+
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}');">
+
+    
+    <div class="table-container">
+        <h2 class="table-title">Transaction History</h2>
+        <table class="transaction-table">
+            <thead>
+                <tr>
+                    <th>Sr. no.</th>
+                    <th>Transaction ID</th>
+                    <th>Stocks' name</th>
+                    <th>Transaction Type <br> (buy or sell)</th>
+                    <th>Average price per stock</th>
+                    <th>No. of stocks bought or sold</th>
+                    <th>Time of Transaction</th>
+                    <th>Total price paid/received</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ transaction.id }}</td>
+                    <td>{{ transaction.stock.name }} ({{ transaction.stock.symbol }})</td>
+                    <td>{{ transaction.get_transaction_type_display }}</td>
+                    <td>{{ transaction.price_per_share }}</td>
+                    <td>{{ transaction.quantity }}</td>
+                    <td>{{ transaction.transaction_date|date:"Y-m-d H:i A" }}</td>
+                    <td>{{ transaction.price_per_share|floatformat:2|add:":"|add:transaction.quantity|add:"total" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">No transactions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
+
+{% endblock body %}

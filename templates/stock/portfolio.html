@@ -1,0 +1,47 @@
+{% extends './navbar.html' %}
+{% load static %}
+
+{% block body %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - Pro Trader X</title>
+    <link rel="stylesheet" href="{% static 'stock/css/portfolio.css' %}" type="text/css" media="screen" >
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen" >
+</head>
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}');">
+
+    <section class="container">
+        <h2 class="heading">Portfolio</h2>
+
+        <div class="portfolio-section">
+            <div class="chart-container">
+                <img src="{% static 'stock/images/graph.png' %}"  alt="Stock Chart" class="chart-image">
+            </div>
+
+            <div class="summary-container">
+                <blockquote class="quote">
+                    "The four most expensive words in the English language are this time it’s different."
+                    <br>~ Sir John Templeton
+                </blockquote>
+
+                <div class="summary-box">
+                    <h3>Summary</h3>
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Member since:</strong> {{ user.created_at|date:"d/m/Y" }}</p>
+                    <p><strong>Portfolio ID:</strong> {{ portfolio.portfolio_id }}</p>
+                    <p><strong>Profit/Loss:</strong> <span class="profit">{{ total_profit_loss|floatformat:0 }}%</span></p>
+                    <p><strong>Profit/Loss in Rupees:</strong> Rs. {{ portfolio.profit_loss }}</p>
+                    <p><strong>Transactions history:</strong> <a href="../transactions/">Click here</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
+
+{% endblock body %}

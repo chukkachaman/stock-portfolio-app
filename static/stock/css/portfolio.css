@@ -1,0 +1,103 @@
+/* General styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    background-size: cover;  /* Ensures the image covers the entire background */
+    background-position: center;  /* Centers the image */
+    background-repeat: repeat;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container for the main content */
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Heading styling */
+.heading {
+    text-align: center;
+    color: #28a745;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* Layout for the portfolio section */
+.portfolio-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Chart container styling */
+.chart-container {
+    flex: 2;
+    margin-right: 20px;
+}
+
+.chart-image {
+    width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Summary box styling */
+.summary-container {
+    flex: 1;
+}
+
+.summary-box {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.summary-box h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.summary-box p {
+    font-size: 1rem;
+    margin: 10px 0;
+}
+
+.profit {
+    color: green;
+    font-weight: bold;
+}
+
+.summary-box a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+/* Quote styling */
+.quote {
+    font-style: italic;
+    text-align: right;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .portfolio-section {
+        flex-direction: column;
+    }
+
+    .chart-container {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+}

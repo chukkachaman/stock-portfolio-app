@@ -1,0 +1,108 @@
+/* Navbar styling */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #d3d3d3;
+    padding: 10px;
+    height: 80px;
+    flex-wrap: wrap;  /* Ensures elements wrap on smaller screens */
+}
+
+/* Adjusted Logo styling (wider but same height) */
+.logo img {
+    width: 80px;  /* Increase width to make it wider */
+    height: 60px;  /* Keep the height the same */
+    display: inline-block;
+    margin-left: 10px;
+}
+
+/* Navigation links styling */
+.nav-links {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li {
+    margin-right: 40px; /* Increased spacing between icons */
+    text-align: center; /* Center-align the text below the images */
+}
+
+/* Align text below images */
+.nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column; /* Stack image and text vertically */
+    align-items: center;
+}
+
+.nav-links a img {
+    width: 32px;  /* Increased icon size */
+    height: 32px;
+    margin-bottom: 5px; /* Space between image and text */
+}
+
+/* Login button styling */
+.login-btn {
+    background-color: #b3b3b3;
+    padding: 10px 15px;
+    border-radius: 15px;
+    text-decoration: none;
+    color: #000;
+    font-size: 16px;
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.login-btn:hover {
+    background-color: #8c8c8c;
+}
+
+/* Responsive Styles for Small Screens */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column; /* Stack logo and links vertically on small screens */
+        align-items: flex-start; /* Align items to the left */
+        height: auto; /* Adjust height for stacked layout */
+    }
+
+    .nav-links {
+        flex-direction: column; /* Stack icons and text vertically */
+        width: 100%; /* Make nav-links full width */
+        align-items: flex-start; /* Align icons and text to the left */
+    }
+
+    .nav-links li {
+        margin: 10px 0; /* Add vertical spacing between each nav item */
+    }
+
+    .logo img {
+        margin-bottom: 10px; /* Add space below logo */
+    }
+
+    .login-btn {
+        margin-left: 0; /* Align login button to the left */
+        width: 100%; /* Make login button full width */
+        text-align: center;
+    }
+}
+
+/* Larger screen adjustments */
+@media (min-width: 1024px) {
+    .nav-links li {
+        margin-right: 50px; /* Even more spacing between icons on large screens */
+    }
+
+    .nav-links a img {
+        width: 36px;  /* Larger icon size for big screens */
+        height: 36px;
+    }
+
+    .logo img {
+        width: 120px;  /* Larger logo for big screens */
+    }
+}

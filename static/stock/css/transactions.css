@@ -1,0 +1,94 @@
+/* General styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding-top: 80px;  /* Ensure content starts below the fixed navbar */
+}
+
+/* Navbar (Assumed to be fixed at the top) */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Ensure it's above the content */
+}
+
+/* Table container */
+.table-container {
+    width: 80%;
+    margin: auto;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Title of the table */
+.table-title {
+    text-align: center;
+    font-size: 28px;
+    color: teal;
+    margin-bottom: 20px;
+}
+
+/* Table styling */
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.transaction-table thead th {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.transaction-table th, 
+.transaction-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+.transaction-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.transaction-table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+.transaction-table tbody td {
+    font-size: 16px;
+}
+
+/* Style for empty message */
+.transaction-table tbody tr td[colspan="8"] {
+    font-size: 18px;
+    color: #ff0000;
+    text-align: center;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+    .table-container {
+        width: 95%;
+    }
+    
+    .table-title {
+        font-size: 22px;
+    }
+
+    .transaction-table thead th, 
+    .transaction-table tbody td {
+        font-size: 14px;
+        padding: 8px;
+    }
+}

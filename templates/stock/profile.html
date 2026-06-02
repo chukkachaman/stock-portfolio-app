@@ -1,0 +1,78 @@
+{% extends './navbar.html' %}
+{% load static %}
+
+{% block body %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="{% static 'stock/css/profile.css' %}" type="text/css" media="screen">
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen">
+    <script>
+        function triggerFileInput() {
+            document.getElementById('file-input').click();
+        }
+    </script>
+</head>
+
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}');">
+
+    <div class="profile-container">
+        <div class="profile-left">
+            <div class="profile-pic-container">
+                <img src="{{ user.image.url }}" alt="Profile Picture" class="profile-pic">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" id="file-input" name="image" accept="image/*" hidden onchange="this.form.submit()">
+                    <button type="button" class="change-pic-btn" onclick="triggerFileInput()">Change Profile Picture</button>
+                </form>
+            </div>
+            <div class="user-card">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Phone:</strong> {{ user.phone }}</p>
+            </div>
+        </div>
+
+        <div class="profile-right">
+            <h2>Profile</h2>
+            <div class="profile-details">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="field">
+                        <span>First Name:</span>
+                        <input type="text" name="first_name" value="{{ user.first_name }}">
+                        <button type="submit" class="change-btn">Change</button>
+                    </div>
+                    <div class="field">
+                        <span>Last Name:</span>
+                        <input type="text" name="last_name" value="{{ user.last_name }}">
+                        <button type="submit" class="change-btn">Change</button>
+                    </div>
+                    <div class="field">
+                        <span>Budget:</span>
+                        <input type="number" name="budget" value="{{ user.budget }}" step="0.01">
+                        <button type="submit" class="change-btn">Change</button>
+                    </div>
+                    <div class="field">
+                        <span>Password:</span>
+                        <input type="password" name="password" placeholder="New Password">
+                        <button type="submit" class="change-btn">Change</button>
+                    </div>
+                    <div class="field">
+                        <span>User since:</span>
+                        <span class="value">{{ user.created_at|date:"d/m/Y" }}</span>
+                    </div>
+                </form>
+            </div>
+            <button class="save-changes-btn">Save Changes</button>
+        </div>
+    </div>
+
+</body>
+</html>
+
+{% endblock body %}

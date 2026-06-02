@@ -1,0 +1,126 @@
+{% extends './navbar.html' %}
+{% load static %}
+
+{% block body %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watchlist - Pro Trader X</title>
+    <link rel="stylesheet" href="{% static 'stock/css/watchlist.css' %}" type="text/css" media="screen" >
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen" >
+</head>
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}');">
+
+    <!-- Main Content -->
+    <section class="container">
+        <h2 class="heading">Watchlist</h2>
+        <table class="stocks-table">
+            <thead>
+                <tr>
+                    <th>Sr. No.</th>
+                    <th>Name of Stocks</th>
+                    <th>No. of stocks available</th>
+                    <th>No. of stocks selected</th>
+                    <th>Current price per stock</th>
+                    <th>Total Price</th>
+                    <th>Options</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in watchlist_items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.stock.name }} ({{ item.stock.symbol }})</td>
+                    <td>{{ item.stock.quantity }}</td>
+                    <td><input type="number" class="quantity-input" value="0" min="0" max="{{ item.stock.quantity }}"></td>
+                    <td>{{ item.stock.current_price|floatformat:2 }}</td>
+                    <td class="total-price" data-stock-id="{{ item.stock.id }}">0.00</td>
+                    <td>
+                        <button class="purchase-btn" data-stock-id="{{ item.stock.id }}">Purchase</button>
+                        <button class="remove-btn" data-stock-id="{{ item.stock.id }}">Remove from Watchlist</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No stocks in watchlist.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+        <script>
+            $(document).ready(function() {
+                // Function to update total price based on quantity
+                $('.quantity-input').on('input', function() {
+                    const row = $(this).closest('tr');
+                    const quantity = parseInt($(this).val()) || 0; // Get quantity input
+                    const pricePerStock = parseFloat(row.find('td:nth-child(5)').text()); // Current price
+                    const totalPrice = quantity * pricePerStock; // Calculate total price
+                    row.find('.total-price').text(totalPrice.toFixed(2)); // Update total price display
+                });
+            
+                // Handle purchase button click
+                $('.purchase-btn').click(function() {
+                    const stockId = $(this).data('stock-id');
+                    const quantity = $(this).closest('tr').find('.quantity-input').val();
+            
+                    if (quantity && !isNaN(quantity) && quantity > 0) {
+                        // AJAX request to purchase stock
+                        $.ajax({
+                            url: "{% url 'purchase_stock' %}",
+                            type: 'POST',
+                            data: {
+                                stock_id: stockId,
+                                quantity: quantity
+                            },
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            success: function(response) {
+                                alert(response.status);
+                                location.reload(); // Optional: reload page to update stock availability
+                            },
+                            error: function(error) {
+                                alert('Failed to purchase stock.');
+                            }
+                        });
+                    } else {
+                        alert('Please enter a valid quantity.');
+                    }
+                });
+            
+                // Handle remove button click
+                $('.remove-btn').click(function() {
+                    const stockId = $(this).data('stock-id');
+            
+                    // AJAX request to remove from watchlist
+                    $.ajax({
+                        url: "{% url 'remove_from_watchlist' %}",
+                        type: 'POST',
+                        data: {
+                            stock_id: stockId
+                        },
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            alert(response.status);
+                            location.reload(); // Reload the page to reflect changes
+                        },
+                        error: function(error) {
+                            alert('Failed to remove stock from watchlist.');
+                        }
+                    });
+                });
+            });
+            </script>
+            
+    </section>
+</body>
+</html>
+
+{% endblock body %}

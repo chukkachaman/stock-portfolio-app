@@ -1,0 +1,78 @@
+{% extends './navbar.html' %}
+{% load static %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Pro Trader X</title>
+    <link rel="stylesheet" href="{% static 'stock/css/home.css' %}" type="text/css" media="screen" >
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen" >
+</head>
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}');">
+    <div class="container">
+        <h1 class="home-title">Home</h1>
+        <h2 class="your-stocks">Your Stocks</h2>
+        <table class="stocks-table" border="1">
+            <thead>
+                <tr>
+                    <th>Sr. no.</th>
+                    <th>Name of Stocks</th>
+                    <th>No. of stocks Owned</th>
+                    <th>Average price per stocks purchased</th>
+                    <th>Current price per stocks</th>
+                    <th>Profit/Loss</th>
+                    <th>Options</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ transaction.stock.name }}</td>
+                        <td>{{ transaction.quantity }}</td>
+                        <td>Rs. {{ transaction.price_per_share }}</td>
+                        <td>Rs. {{ transaction.current_price }}</td>
+                        <td>{{ transaction.profit_loss_possible|floatformat:2 }}%</td>
+                        <td>
+                            <button class="buy-btn" data-stock-id="{{ transaction.stock.id }}" data-transaction-id="{{ transaction.id }}">Buy more</button>
+                            <a href="{% url 'sell-stock' transaction.id %}">
+                                <button class="sell-btn" data-stock-id="{{ transaction.stock.id }}" data-transaction-id="{{ transaction.id }}">
+                                    Sell
+                                </button>
+                            </a>                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7">No stocks found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $('.buy-btn').click(function() {
+            const stockId = $(this).data('stock-id');
+        
+            alert(`Buy that stock from here.`);
+            setTimeout(function() {
+                window.location.href = `/stocks`;  // Replace with actual URL pattern
+            }, 500);  
+        });
+
+        // Check if URL contains 'sold' parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('sold')) {
+            const amount = urlParams.get('amount');
+            alert(`Successfully sold stocks for Rs. ${amount}`);
+        }
+
+    </script>
+
+</body>
+</html>
+{% endblock body %}
