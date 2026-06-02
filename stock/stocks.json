@@ -4,140 +4,139 @@
       "name": "Apple Inc.",
       "market": "NASDAQ",
       "quantity": 100,
-      "current_price": 150.50
+      "current_price": 246.00
     },
     {
       "symbol": "GOOGL",
       "name": "Alphabet Inc.",
       "market": "NASDAQ",
       "quantity": 200,
-      "current_price": 2800.30
+      "current_price": 282.00
     },
     {
       "symbol": "MSFT",
       "name": "Microsoft Corporation",
       "market": "NASDAQ",
       "quantity": 150,
-      "current_price": 299.20
+      "current_price": 344.00
     },
     {
       "symbol": "TSLA",
       "name": "Tesla Inc.",
       "market": "NASDAQ",
       "quantity": 50,
-      "current_price": 900.10
+      "current_price": 330.00
     },
     {
       "symbol": "AMZN",
       "name": "Amazon.com Inc.",
       "market": "NASDAQ",
       "quantity": 75,
-      "current_price": 3400.50
+      "current_price": 200.00
     },
     {
-      "symbol": "FB",
+      "symbol": "META",
       "name": "Meta Platforms Inc.",
       "market": "NASDAQ",
       "quantity": 120,
-      "current_price": 350.80
+      "current_price": 466.00
     },
     {
       "symbol": "NFLX",
       "name": "Netflix Inc.",
       "market": "NASDAQ",
       "quantity": 65,
-      "current_price": 615.90
+      "current_price": 65.00
     },
     {
       "symbol": "NVDA",
       "name": "NVIDIA Corporation",
       "market": "NASDAQ",
       "quantity": 180,
-      "current_price": 220.50
+      "current_price": 174.00
     },
     {
       "symbol": "AMD",
       "name": "Advanced Micro Devices Inc.",
       "market": "NASDAQ",
       "quantity": 200,
-      "current_price": 108.90
+      "current_price": 407.00
     },
     {
       "symbol": "INTC",
       "name": "Intel Corporation",
       "market": "NASDAQ",
       "quantity": 400,
-      "current_price": 55.50
+      "current_price": 84.00
     },
     {
       "symbol": "ORCL",
       "name": "Oracle Corporation",
       "market": "NYSE",
       "quantity": 220,
-      "current_price": 88.20
+      "current_price": 191.00
     },
     {
       "symbol": "SAP",
       "name": "SAP SE",
       "market": "NYSE",
       "quantity": 140,
-      "current_price": 135.80
+      "current_price": 149.00
     },
     {
       "symbol": "BABA",
       "name": "Alibaba Group Holding Limited",
       "market": "NYSE",
       "quantity": 100,
-      "current_price": 180.60
+      "current_price": 102.00
     },
     {
       "symbol": "T",
       "name": "AT&T Inc.",
       "market": "NYSE",
       "quantity": 350,
-      "current_price": 29.50
+      "current_price": 19.20
     },
     {
       "symbol": "VZ",
       "name": "Verizon Communications Inc.",
       "market": "NYSE",
       "quantity": 300,
-      "current_price": 54.40
+      "current_price": 37.30
     },
     {
       "symbol": "JNJ",
       "name": "Johnson & Johnson",
       "market": "NYSE",
       "quantity": 250,
-      "current_price": 170.70
+      "current_price": 174.00
     },
     {
       "symbol": "PFE",
       "name": "Pfizer Inc.",
       "market": "NYSE",
       "quantity": 400,
-      "current_price": 44.60
+      "current_price": 19.90
     },
     {
       "symbol": "KO",
       "name": "Coca-Cola Company",
       "market": "NYSE",
       "quantity": 500,
-      "current_price": 56.30
+      "current_price": 61.20
     },
     {
       "symbol": "DIS",
       "name": "Walt Disney Company",
       "market": "NYSE",
       "quantity": 130,
-      "current_price": 180.20
+      "current_price": 79.10
     },
     {
       "symbol": "CSCO",
       "name": "Cisco Systems Inc.",
       "market": "NASDAQ",
       "quantity": 600,
-      "current_price": 56.90
+      "current_price": 99.80
     }
-  ]
-  
+]
