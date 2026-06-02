@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .forms import RegisterForm, UserUpdateForm
@@ -59,16 +60,46 @@ def portfolio(request):
     user = get_object_or_404(User, email=request.user.email)
     portfolio = get_object_or_404(Portfolio, user=user)
     transactions = Transaction.objects.filter(portfolio=portfolio)
-    
-    total_profit_loss = portfolio.profit_loss  # Assuming you have a method to calculate this
-    total_investment = sum(tx.price_per_share * tx.quantity for tx in transactions)  # Example for investment calculation
+
+    # Build per-stock holdings from active buy transactions
+    holdings = {}
+    for tx in transactions.filter(transaction_type='buy').select_related('stock'):
+        sym = tx.stock.symbol
+        if sym not in holdings:
+            holdings[sym] = {
+                'name': tx.stock.name,
+                'symbol': sym,
+                'quantity': 0,
+                'total_invested': 0,
+                'current_price': float(tx.stock.current_price),
+            }
+        holdings[sym]['quantity'] += tx.quantity
+        holdings[sym]['total_invested'] += float(tx.price_per_share * tx.quantity)
+
+    for h in holdings.values():
+        h['current_value'] = round(h['current_price'] * h['quantity'], 2)
+        h['profit_loss'] = round(h['current_value'] - h['total_invested'], 2)
+        h['profit_loss_pct'] = round(
+            (h['profit_loss'] / h['total_invested'] * 100) if h['total_invested'] > 0 else 0, 2
+        )
+        h['total_invested'] = round(h['total_invested'], 2)
+
+    holdings_list = list(holdings.values())
+    total_invested = round(sum(h['total_invested'] for h in holdings_list), 2)
+    current_value = round(sum(h['current_value'] for h in holdings_list), 2)
+    total_pnl = round(current_value - total_invested, 2)
+    total_pnl_pct = round((total_pnl / total_invested * 100) if total_invested > 0 else 0, 2)
 
     context = {
         'user': user,
         'portfolio': portfolio,
         'transactions': transactions,
-        'total_profit_loss': total_profit_loss,
-        'total_investment': total_investment,
+        'holdings': holdings_list,
+        'holdings_json': json.dumps(holdings_list),
+        'total_invested': total_invested,
+        'current_value': current_value,
+        'total_pnl': total_pnl,
+        'total_pnl_pct': total_pnl_pct,
     }
     return render(request, 'stock/portfolio.html', context)
 

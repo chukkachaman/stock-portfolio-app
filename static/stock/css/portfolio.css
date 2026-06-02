@@ -1,103 +1,164 @@
-/* General styling */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    background-size: cover;  /* Ensures the image covers the entire background */
-    background-position: center;  /* Centers the image */
-    background-repeat: repeat;
     margin: 0;
     padding: 0;
 }
 
-/* Container for the main content */
 .container {
     max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    margin: 30px auto;
+    padding: 28px;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: 12px;
 }
 
-/* Heading styling */
 .heading {
     text-align: center;
-    color: #28a745;
+    color: #1e293b;
     font-size: 2rem;
-    margin-bottom: 20px;
-    font-weight: bold;
+    margin-bottom: 24px;
+    font-weight: 700;
 }
 
-/* Layout for the portfolio section */
-.portfolio-section {
+/* Summary Cards */
+.cards-row {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
 }
 
-/* Chart container styling */
-.chart-container {
-    flex: 2;
-    margin-right: 20px;
-}
-
-.chart-image {
-    width: 100%;
-    height: auto;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Summary box styling */
-.summary-container {
+.card {
     flex: 1;
+    min-width: 180px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.summary-box {
-    background-color: #f8f9fa;
-    border: 1px solid #ddd;
+.card-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.card-green { border-left: 4px solid #22c55e; }
+.card-green .card-value { color: #16a34a; }
+.card-red { border-left: 4px solid #ef4444; }
+.card-red .card-value { color: #dc2626; }
+
+/* Charts */
+.charts-row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+}
+
+.chart-box {
+    flex: 1;
+    min-width: 280px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.summary-box h3 {
+.chart-title {
     text-align: center;
-    margin-bottom: 15px;
-    color: #333;
-}
-
-.summary-box p {
     font-size: 1rem;
-    margin: 10px 0;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 16px 0;
 }
 
-.profit {
-    color: green;
-    font-weight: bold;
+/* Holdings Table */
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 12px 0;
 }
 
-.summary-box a {
-    color: #007bff;
+.holdings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.holdings-table thead tr {
+    background: #1e293b;
+    color: #fff;
+}
+
+.holdings-table th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.holdings-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #374151;
+}
+
+.holdings-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.holdings-table small {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.profit { color: #16a34a; font-weight: 600; }
+.loss   { color: #dc2626; font-weight: 600; }
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+}
+
+.buy-btn {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 10px 24px;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 8px;
     text-decoration: none;
+    font-weight: 600;
 }
 
-/* Quote styling */
-.quote {
-    font-style: italic;
-    text-align: right;
-    margin-bottom: 20px;
-    color: #333;
+/* Meta row */
+.meta-row {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+    margin-top: 8px;
 }
 
-/* Responsive design */
+.meta-row a { color: #6366f1; text-decoration: none; }
+
 @media (max-width: 768px) {
-    .portfolio-section {
-        flex-direction: column;
-    }
-
-    .chart-container {
-        margin-right: 0;
-        margin-bottom: 20px;
-    }
+    .cards-row, .charts-row { flex-direction: column; }
+    .holdings-table { font-size: 12px; }
 }

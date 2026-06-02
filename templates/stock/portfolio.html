@@ -2,46 +2,186 @@
 {% load static %}
 
 {% block body %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio - Pro Trader X</title>
-    <link rel="stylesheet" href="{% static 'stock/css/portfolio.css' %}" type="text/css" media="screen" >
-    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen" >
+    <link rel="stylesheet" href="{% static 'stock/css/portfolio.css' %}" type="text/css" media="screen">
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body style="background-image: url('{% static 'stock/images/bg.jpg' %}');">
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}'); background-size: cover; background-position: center;">
 
-    <section class="container">
-        <h2 class="heading">Portfolio</h2>
+<section class="container">
+    <h2 class="heading">My Portfolio</h2>
 
-        <div class="portfolio-section">
-            <div class="chart-container">
-                <img src="{% static 'stock/images/graph.png' %}"  alt="Stock Chart" class="chart-image">
-            </div>
-
-            <div class="summary-container">
-                <blockquote class="quote">
-                    "The four most expensive words in the English language are this time it’s different."
-                    <br>~ Sir John Templeton
-                </blockquote>
-
-                <div class="summary-box">
-                    <h3>Summary</h3>
-                    <p><strong>Username:</strong> {{ user.username }}</p>
-                    <p><strong>Member since:</strong> {{ user.created_at|date:"d/m/Y" }}</p>
-                    <p><strong>Portfolio ID:</strong> {{ portfolio.portfolio_id }}</p>
-                    <p><strong>Profit/Loss:</strong> <span class="profit">{{ total_profit_loss|floatformat:0 }}%</span></p>
-                    <p><strong>Profit/Loss in Rupees:</strong> Rs. {{ portfolio.profit_loss }}</p>
-                    <p><strong>Transactions history:</strong> <a href="../transactions/">Click here</a></p>
-                </div>
-            </div>
+    <!-- Summary Cards -->
+    <div class="cards-row">
+        <div class="card">
+            <span class="card-label">Total Invested</span>
+            <span class="card-value">${{ total_invested }}</span>
         </div>
-    </section>
+        <div class="card">
+            <span class="card-label">Current Value</span>
+            <span class="card-value">${{ current_value }}</span>
+        </div>
+        <div class="card {% if total_pnl >= 0 %}card-green{% else %}card-red{% endif %}">
+            <span class="card-label">Total P&amp;L</span>
+            <span class="card-value">
+                {% if total_pnl >= 0 %}+{% endif %}${{ total_pnl }}
+                ({% if total_pnl_pct >= 0 %}+{% endif %}{{ total_pnl_pct }}%)
+            </span>
+        </div>
+        <div class="card">
+            <span class="card-label">Remaining Budget</span>
+            <span class="card-value">${{ user.budget }}</span>
+        </div>
+    </div>
+
+    {% if holdings %}
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+        <!-- Donut Chart: Portfolio Allocation -->
+        <div class="chart-box">
+            <h3 class="chart-title">Portfolio Allocation</h3>
+            <canvas id="donutChart"></canvas>
+        </div>
+
+        <!-- Bar Chart: Profit/Loss per Stock -->
+        <div class="chart-box">
+            <h3 class="chart-title">Profit / Loss per Stock ($)</h3>
+            <canvas id="pnlChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <h3 class="section-title">Holdings Breakdown</h3>
+    <table class="holdings-table">
+        <thead>
+            <tr>
+                <th>Stock</th>
+                <th>Qty</th>
+                <th>Avg Buy Price</th>
+                <th>Current Price</th>
+                <th>Invested</th>
+                <th>Current Value</th>
+                <th>P&amp;L ($)</th>
+                <th>P&amp;L (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in holdings %}
+            <tr>
+                <td><strong>{{ h.symbol }}</strong><br><small>{{ h.name }}</small></td>
+                <td>{{ h.quantity }}</td>
+                <td>${{ h.total_invested|floatformat:2 }}</td>
+                <td>${{ h.current_price }}</td>
+                <td>${{ h.total_invested }}</td>
+                <td>${{ h.current_value }}</td>
+                <td class="{% if h.profit_loss >= 0 %}profit{% else %}loss{% endif %}">
+                    {% if h.profit_loss >= 0 %}+{% endif %}${{ h.profit_loss }}
+                </td>
+                <td class="{% if h.profit_loss_pct >= 0 %}profit{% else %}loss{% endif %}">
+                    {% if h.profit_loss_pct >= 0 %}+{% endif %}{{ h.profit_loss_pct }}%
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <div class="empty-state">
+        <p>You have no active holdings yet.</p>
+        <a href="/stocks/" class="buy-btn">Browse Stocks</a>
+    </div>
+    {% endif %}
+
+    <div class="meta-row">
+        <p>Portfolio ID: {{ portfolio.portfolio_id }} &nbsp;|&nbsp; Member since: {{ user.created_at|date:"d M Y" }}
+        &nbsp;|&nbsp; <a href="/transactions/">View All Transactions</a></p>
+    </div>
+</section>
+
+<script>
+const holdings = {{ holdings_json|safe }};
+
+if (holdings.length > 0) {
+    const labels = holdings.map(h => h.symbol);
+    const values = holdings.map(h => h.current_value);
+    const pnls   = holdings.map(h => h.profit_loss);
+
+    const colors = [
+        '#6366f1','#22c55e','#f59e0b','#ef4444','#3b82f6',
+        '#a855f7','#14b8a6','#f97316','#ec4899','#84cc16',
+        '#06b6d4','#8b5cf6','#10b981','#f43f5e','#0ea5e9',
+        '#d946ef','#fb923c','#a3e635','#34d399','#60a5fa'
+    ];
+
+    // Donut Chart
+    new Chart(document.getElementById('donutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 12 } } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.label}: $${ctx.parsed.toFixed(2)}`
+                    }
+                }
+            }
+        }
+    });
+
+    // P&L Bar Chart
+    const barColors = pnls.map(v => v >= 0 ? '#22c55e' : '#ef4444');
+    new Chart(document.getElementById('pnlChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'P&L ($)',
+                data: pnls,
+                backgroundColor: barColors,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.parsed.y >= 0 ? '+' : ''}$${ctx.parsed.y.toFixed(2)}`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    grid: { color: '#e5e7eb' },
+                    ticks: {
+                        callback: val => `$${val}`
+                    }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+</script>
 
 </body>
 </html>
-
 {% endblock body %}
