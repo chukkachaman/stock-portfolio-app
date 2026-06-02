@@ -316,33 +316,45 @@ def sell_stock(request, transaction_id):
     transaction = get_object_or_404(Transaction, id=transaction_id, portfolio__user=request.user)
 
     if transaction.transaction_type != 'buy' or transaction.quantity == 0:
-        messages.error(request, 'No stocks to sell in this transaction.')
-        return redirect('home')  # Assuming 'home' is the main page
+        messages.error(request, 'No stocks to sell.')
+        return redirect('home')
+
+    if request.method != 'POST':
+        return redirect('home')
+
+    try:
+        sell_qty = int(request.POST.get('quantity', 0))
+    except (ValueError, TypeError):
+        messages.error(request, 'Invalid quantity.')
+        return redirect('home')
+
+    if sell_qty <= 0 or sell_qty > transaction.quantity:
+        messages.error(request, f'Quantity must be between 1 and {transaction.quantity}.')
+        return redirect('home')
 
     stock = transaction.stock
-
-    total_amount_obtained = transaction.quantity * stock.current_price
+    total_amount = Decimal(sell_qty) * stock.current_price
 
     user = request.user
-    user.budget += total_amount_obtained
+    user.budget += total_amount
     user.save()
 
-    stock.quantity += transaction.quantity
+    stock.quantity += sell_qty
     stock.save()
-    new_transaction = Transaction(
-        portfolio = transaction.portfolio,
-        stock = transaction.stock,
-        transaction_type = 'sell',
-        quantity = transaction.quantity,
-        price_per_share = stock.current_price,
 
+    Transaction.objects.create(
+        portfolio=transaction.portfolio,
+        stock=stock,
+        transaction_type='sell',
+        quantity=sell_qty,
+        price_per_share=stock.current_price,
     )
-    transaction.transaction_type = 'bs'
-    transaction.save()
 
+    if sell_qty == transaction.quantity:
+        transaction.transaction_type = 'bs'
+        transaction.save()
+    else:
+        transaction.quantity -= sell_qty
+        transaction.save()
 
-    new_transaction.save()
-
-    messages.success(request, f'Successfully sold stocks for Rs. {total_amount_obtained:.2f}.')
-
-    return redirect(f'/?sold=True&amount={total_amount_obtained:.2f}')
+    return redirect(f'/?sold=True&amount={total_amount:.2f}')

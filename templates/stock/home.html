@@ -38,11 +38,13 @@
                         <td>{{ transaction.profit_loss_possible|floatformat:2 }}%</td>
                         <td>
                             <button class="buy-btn" data-stock-id="{{ transaction.stock.id }}" data-transaction-id="{{ transaction.id }}">Buy more</button>
-                            <a href="{% url 'sell-stock' transaction.id %}">
-                                <button class="sell-btn" data-stock-id="{{ transaction.stock.id }}" data-transaction-id="{{ transaction.id }}">
-                                    Sell
-                                </button>
-                            </a>                        </td>
+                            <form method="POST" action="{% url 'sell-stock' transaction.id %}" style="display:inline-flex; align-items:center; gap:6px; margin-top:6px;">
+                                {% csrf_token %}
+                                <input type="number" name="quantity" min="1" max="{{ transaction.quantity }}" value="1"
+                                    style="width:60px; padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:13px;">
+                                <button type="submit" class="sell-btn">Sell</button>
+                            </form>
+                        </td>
                     </tr>
                 {% empty %}
                     <tr>
