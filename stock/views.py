@@ -6,7 +6,7 @@ from django.db.models import F, ExpressionWrapper, DecimalField
 from .models import Stock, Portfolio, Transaction, User, Watchlist
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .utils import fetch_and_load_stock_data  # Import your function
+from .utils import fetch_and_load_stock_data, fetch_live_prices
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm
@@ -87,11 +87,23 @@ def user_logout(request):
 
 
 
-@csrf_exempt  
+@csrf_exempt
 def reload_stocks(request):
     if request.method == 'POST':
         fetch_and_load_stock_data()
         return JsonResponse({'status': 'Stocks reloaded successfully'})
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+@csrf_exempt
+def refresh_live_prices(request):
+    if request.method == 'POST':
+        result = fetch_live_prices()
+        return JsonResponse({
+            'status': f"Updated {len(result['updated'])} stocks with live prices.",
+            'updated': result['updated'],
+            'failed': result['failed'],
+        })
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 

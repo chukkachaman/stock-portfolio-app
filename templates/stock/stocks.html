@@ -19,28 +19,56 @@
     <!-- Main Content -->
     <section class="container">
         <h2 class="heading">All Stocks</h2>
-        <button id="reload-stocks-btn">Reset All Stocks to Default</button>
 
-        <p id="status-message"></p>
-            <!-- Include jQuery -->
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>       
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
+            <button id="refresh-live-btn" style="background:#22c55e; color:#fff; padding:8px 18px; border:none; border-radius:6px; font-weight:600; cursor:pointer;">
+                🔄 Refresh Live Prices
+            </button>
+            <button id="reload-stocks-btn" style="background:#6b7280; color:#fff; padding:8px 18px; border:none; border-radius:6px; cursor:pointer;">
+                Reset to Default
+            </button>
+            <span id="last-updated" style="color:#aaa; font-size:13px;"></span>
+        </div>
+
+        <p id="status-message" style="color:#22c55e; font-weight:500;"></p>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
         <script>
             $(document).ready(function() {
-                $('#reload-stocks-btn').click(function() {
+                $('#refresh-live-btn').click(function() {
+                    var btn = $(this);
+                    btn.text('Fetching...').prop('disabled', true);
+                    $('#status-message').text('');
 
+                    $.ajax({
+                        url: "{% url 'refresh_live_prices' %}",
+                        type: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                        success: function(response) {
+                            $('#status-message').text(response.status);
+                            $('#last-updated').text('Last updated: ' + new Date().toLocaleTimeString());
+                            btn.text('🔄 Refresh Live Prices').prop('disabled', false);
+                            location.reload();
+                        },
+                        error: function() {
+                            $('#status-message').css('color','#ef4444').text('Failed to fetch live prices.');
+                            btn.text('🔄 Refresh Live Prices').prop('disabled', false);
+                        }
+                    });
+                });
+
+                $('#reload-stocks-btn').click(function() {
                     $.ajax({
                         url: "{% url 'reload_stocks' %}",
                         type: 'POST',
-                        data: {},
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
                         success: function(response) {
                             $('#status-message').text(response.status);
+                            location.reload();
                         },
-                        error: function(error) {
-                            $('#status-message').text('Failed to reload stocks.');
+                        error: function() {
+                            $('#status-message').text('Failed to reset stocks.');
                         }
                     });
                 });
