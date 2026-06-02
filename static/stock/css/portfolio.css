@@ -71,10 +71,17 @@ body {
 .chart-box {
     flex: 1;
     min-width: 280px;
+    max-width: 560px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     padding: 20px;
+    height: 340px;
+    position: relative;
+}
+
+.chart-box canvas {
+    max-height: 280px !important;
 }
 
 .chart-title {
