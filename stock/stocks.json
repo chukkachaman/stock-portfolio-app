@@ -138,5 +138,75 @@
       "market": "NASDAQ",
       "quantity": 600,
       "current_price": 119.00
+    },
+    {
+      "symbol": "JPM",
+      "name": "JPMorgan Chase & Co.",
+      "market": "NYSE",
+      "quantity": 120,
+      "current_price": 240.00
+    },
+    {
+      "symbol": "GS",
+      "name": "Goldman Sachs Group Inc.",
+      "market": "NYSE",
+      "quantity": 80,
+      "current_price": 550.00
+    },
+    {
+      "symbol": "V",
+      "name": "Visa Inc.",
+      "market": "NYSE",
+      "quantity": 150,
+      "current_price": 330.00
+    },
+    {
+      "symbol": "MA",
+      "name": "Mastercard Incorporated",
+      "market": "NYSE",
+      "quantity": 100,
+      "current_price": 560.00
+    },
+    {
+      "symbol": "UBER",
+      "name": "Uber Technologies Inc.",
+      "market": "NYSE",
+      "quantity": 300,
+      "current_price": 85.00
+    },
+    {
+      "symbol": "ABNB",
+      "name": "Airbnb Inc.",
+      "market": "NASDAQ",
+      "quantity": 200,
+      "current_price": 130.00
+    },
+    {
+      "symbol": "SPOT",
+      "name": "Spotify Technology S.A.",
+      "market": "NYSE",
+      "quantity": 150,
+      "current_price": 380.00
+    },
+    {
+      "symbol": "SHOP",
+      "name": "Shopify Inc.",
+      "market": "NYSE",
+      "quantity": 250,
+      "current_price": 110.00
+    },
+    {
+      "symbol": "PYPL",
+      "name": "PayPal Holdings Inc.",
+      "market": "NASDAQ",
+      "quantity": 300,
+      "current_price": 75.00
+    },
+    {
+      "symbol": "CRM",
+      "name": "Salesforce Inc.",
+      "market": "NYSE",
+      "quantity": 130,
+      "current_price": 320.00
     }
 ]
