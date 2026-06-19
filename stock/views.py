@@ -26,11 +26,15 @@ def profile(request):
 
     if request.method == 'POST':
         if 'image' in request.FILES:
-            if os.environ.get('CLOUDINARY_CLOUD_NAME'):
-                result = cloudinary.uploader.upload(request.FILES['image'])
-                user.image = result['secure_url']
-            user.save()
-            return redirect('profile')
+            try:
+                if os.environ.get('CLOUDINARY_CLOUD_NAME'):
+                    result = cloudinary.uploader.upload(request.FILES['image'])
+                    user.image = result['secure_url']
+                user.save()
+                return redirect('profile')
+            except Exception as e:
+                print(f"IMAGE UPLOAD ERROR: {e}", flush=True)
+                return HttpResponse(f"Upload failed: {e}", status=500)
         form = UserUpdateForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
