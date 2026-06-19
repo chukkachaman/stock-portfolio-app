@@ -1,4 +1,6 @@
 import json
+import os
+import cloudinary.uploader
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .forms import RegisterForm, UserUpdateForm
@@ -24,7 +26,9 @@ def profile(request):
 
     if request.method == 'POST':
         if 'image' in request.FILES:
-            user.image = request.FILES['image']
+            if os.environ.get('CLOUDINARY_CLOUD_NAME'):
+                result = cloudinary.uploader.upload(request.FILES['image'])
+                user.image = result['secure_url']
             user.save()
             return redirect('profile')
         form = UserUpdateForm(request.POST, request.FILES, instance=user)

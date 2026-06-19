@@ -24,7 +24,7 @@
         <div class="profile-left">
             <div class="profile-pic-container">
                 {% if user.image %}
-                    <img src="{{ user.image.url }}" alt="Profile Picture" class="profile-pic">
+                    <img src="{{ user.image }}" alt="Profile Picture" class="profile-pic">
                 {% else %}
                     <img src="{% static 'stock/images/profile.jpg' %}" alt="Profile Picture" class="profile-pic">
                 {% endif %}

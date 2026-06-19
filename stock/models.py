@@ -41,7 +41,7 @@ class User(AbstractBaseUser):
     role = models.CharField(max_length=5, choices=ROLES, default='user')
     budget = models.DecimalField(max_digits=15, decimal_places=2, default=5000.00)
     created_at = models.DateTimeField(default=timezone.now)
-    image = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    image = models.URLField(blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
