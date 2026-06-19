@@ -27,7 +27,7 @@ def profile(request):
     if request.method == 'POST':
         if 'image' in request.FILES:
             try:
-                if os.environ.get('CLOUDINARY_CLOUD_NAME'):
+                if os.environ.get('CLOUDINARY_URL'):
                     result = cloudinary.uploader.upload(request.FILES['image'])
                     user.image = result['secure_url']
                 user.save()
