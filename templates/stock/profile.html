@@ -23,7 +23,11 @@
     <div class="profile-container">
         <div class="profile-left">
             <div class="profile-pic-container">
-                <img src="{{ user.image.url }}" alt="Profile Picture" class="profile-pic">
+                {% if user.image %}
+                    <img src="{{ user.image.url }}" alt="Profile Picture" class="profile-pic">
+                {% else %}
+                    <img src="{% static 'stock/images/profile.jpg' %}" alt="Profile Picture" class="profile-pic">
+                {% endif %}
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="file" id="file-input" name="image" accept="image/*" hidden onchange="this.form.submit()">
