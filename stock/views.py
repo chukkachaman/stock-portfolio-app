@@ -10,6 +10,7 @@ from .models import Stock, Portfolio, Transaction, User, Watchlist
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .utils import fetch_and_load_stock_data, fetch_live_prices
+from .forecasting import generate_forecast
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm
@@ -317,6 +318,20 @@ def remove_from_watchlist(request):
 
     return JsonResponse({'status': 'Invalid request.'})
 
+
+
+@login_required(login_url='/login/')
+def forecast(request, stock_id):
+    stock = get_object_or_404(Stock, id=stock_id)
+    result = generate_forecast(stock.symbol)
+
+    context = {
+        'stock': stock,
+        'error': result.get('error'),
+        'historical_json': json.dumps(result.get('historical', [])),
+        'forecast_json': json.dumps(result.get('forecast', [])),
+    }
+    return render(request, 'stock/forecast.html', context)
 
 
 @login_required(login_url='/login/')
