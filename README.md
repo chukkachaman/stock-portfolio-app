@@ -11,6 +11,7 @@ A full-stack stock trading simulation platform built with Django. Users get a **
 - **Buy Stocks** — Purchase any quantity within your budget
 - **Sell Stocks** — Sell any partial or full quantity of your holdings
 - **Portfolio Dashboard** — Interactive charts (donut + bar) showing allocation and profit/loss
+- **Price Forecast** — XGBoost-based short-term price prediction per stock, trained on trailing-window lag features from Yahoo Finance history
 - **Watchlist** — Save stocks to track without buying
 - **Transaction History** — Full log of all buys and sells
 - **Profile Page** — Update your profile info and picture
@@ -26,6 +27,7 @@ A full-stack stock trading simulation platform built with Django. Users get a **
 | Frontend | HTML, CSS, jQuery |
 | Charts | Chart.js |
 | Live Prices | yfinance (Yahoo Finance) |
+| Forecasting | XGBoost, scikit-learn, Pandas, NumPy |
 | Image Handling | Pillow |
 
 ---
@@ -91,6 +93,7 @@ stock-portfolio-app/
 │   ├── views.py            # All view logic
 │   ├── urls.py             # URL routing
 │   ├── utils.py            # Live price fetching (yfinance)
+│   ├── forecasting.py      # XGBoost price forecasting
 │   └── migrations/
 ├── stock_portfolio/        # Django project config
 │   ├── settings.py
@@ -106,7 +109,6 @@ stock-portfolio-app/
 
 - Auto price refresh every few minutes using Celery
 - Stock price history charts with candlestick view
-- ML-based stock recommendation system
 - Algorithmic trading module
 
 ---
