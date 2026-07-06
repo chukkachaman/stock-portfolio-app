@@ -1,0 +1,99 @@
+{% extends './navbar.html' %}
+{% load static %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ stock.symbol }} Forecast - Pro Trader X</title>
+    <link rel="stylesheet" href="{% static 'stock/css/forecast.css' %}" type="text/css" media="screen">
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}'); background-size: cover; background-position: center;">
+
+<section class="container">
+    <h2 class="heading">{{ stock.name }} ({{ stock.symbol }}) - Price Forecast</h2>
+
+    {% if error %}
+    <div class="empty-state">
+        <p>{{ error }}</p>
+        <a href="/stocks/" class="buy-btn">Back to Stocks</a>
+    </div>
+    {% else %}
+    <div class="chart-box">
+        <canvas id="forecastChart"></canvas>
+    </div>
+    <p class="meta-row">Forecast generated with an XGBoost regressor trained on the trailing 5-day price window.
+        Educational estimate only — not financial advice.</p>
+    <div class="meta-row">
+        <a href="/stocks/">Back to Stocks</a>
+    </div>
+    {% endif %}
+</section>
+
+<script>
+const historical = {{ historical_json|safe }};
+const forecast = {{ forecast_json|safe }};
+
+if (historical.length > 0) {
+    const historyLabels = historical.map(p => p.date);
+    const forecastLabels = forecast.map(p => p.date);
+    const labels = historyLabels.concat(forecastLabels);
+
+    const historyData = historical.map(p => p.price).concat(Array(forecast.length).fill(null));
+
+    const bridge = historical.length ? historical[historical.length - 1].price : null;
+    const forecastData = Array(historical.length - 1).fill(null)
+        .concat([bridge])
+        .concat(forecast.map(p => p.price));
+
+    new Chart(document.getElementById('forecastChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Historical Close',
+                    data: historyData,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'transparent',
+                    pointRadius: 0,
+                    borderWidth: 2,
+                },
+                {
+                    label: 'Forecast',
+                    data: forecastData,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'transparent',
+                    borderDash: [6, 4],
+                    pointRadius: 0,
+                    borderWidth: 2,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y?.toFixed(2)}`
+                    }
+                }
+            },
+            scales: {
+                y: { ticks: { callback: val => `$${val}` } },
+                x: { ticks: { maxTicksLimit: 10 } }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
+{% endblock body %}
