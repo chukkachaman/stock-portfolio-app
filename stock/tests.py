@@ -131,6 +131,20 @@ class PaymentTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Payment.objects.count(), 0)
 
+    def test_create_order_rejects_amount_below_minimum(self):
+        response = self.client.post(reverse("create_order"), {"amount": "50"})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Payment.objects.count(), 0)
+
+    @patch("stock.views.razorpay_client.order.create")
+    def test_create_order_accepts_minimum_amount(self, mock_create):
+        mock_create.return_value = {"id": "order_test_min", "amount": 10000, "currency": "INR"}
+
+        response = self.client.post(reverse("create_order"), {"amount": "100"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Payment.objects.filter(razorpay_order_id="order_test_min").exists())
+
     @patch("stock.views.razorpay_client.utility.verify_payment_signature")
     def test_verify_payment_credits_budget_once_on_valid_signature(self, mock_verify):
         mock_verify.return_value = True
