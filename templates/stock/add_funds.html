@@ -27,16 +27,19 @@
         <button type="button" class="amount-btn" data-amount="{{ amount }}">+ Rs {{ amount }}</button>
         {% endfor %}
     </div>
+
+    <div class="custom-amount-row">
+        <input type="number" id="custom-amount" min="100" step="1" placeholder="Enter amount (min Rs 100)">
+        <button type="button" class="amount-btn" id="custom-amount-btn">+ Add</button>
+    </div>
 </section>
 
 <script>
-document.querySelectorAll('.amount-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-        const amount = this.dataset.amount;
-        const statusEl = document.getElementById('status-message');
-        statusEl.textContent = '';
+function startPayment(amount) {
+    const statusEl = document.getElementById('status-message');
+    statusEl.textContent = '';
 
-        fetch("{% url 'create_order' %}", {
+    fetch("{% url 'create_order' %}", {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -84,7 +87,25 @@ document.querySelectorAll('.amount-btn').forEach(function (btn) {
         .catch(function () {
             statusEl.textContent = 'Something went wrong starting the payment.';
         });
+}
+
+document.querySelectorAll('.amounts-grid .amount-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        startPayment(this.dataset.amount);
     });
+});
+
+document.getElementById('custom-amount-btn').addEventListener('click', function () {
+    const statusEl = document.getElementById('status-message');
+    const input = document.getElementById('custom-amount');
+    const amount = parseInt(input.value, 10);
+
+    if (!amount || amount < 100) {
+        statusEl.textContent = 'Enter an amount of at least Rs 100.';
+        return;
+    }
+
+    startPayment(amount);
 });
 </script>
 

@@ -56,3 +56,24 @@ body {
 .amount-btn:hover {
     background: #4f46e5;
 }
+
+.custom-amount-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.custom-amount-row input {
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    width: 220px;
+}
+
+.custom-amount-row input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
