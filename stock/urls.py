@@ -20,7 +20,8 @@ urlpatterns = [
     path('sell/<int:transaction_id>/', views.sell_stock, name='sell-stock'),
     path('forecast/<int:stock_id>/', views.forecast, name='forecast'),
     path('add-funds/', views.add_funds, name='add_funds'),
-    path('create-checkout-session/', views.create_checkout_session, name='create_checkout_session'),
+    path('create-order/', views.create_order, name='create_order'),
+    path('verify-payment/', views.verify_payment, name='verify_payment'),
     path('payment-success/', views.payment_success, name='payment_success'),
     
 

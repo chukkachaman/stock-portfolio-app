@@ -1,11 +1,10 @@
 import json
 import os
 import cloudinary.uploader
-import stripe
+import razorpay
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from django.urls import reverse
 from .forms import RegisterForm, UserUpdateForm
 from django.db.models import F, ExpressionWrapper, DecimalField
 from .models import Stock, Portfolio, Transaction, User, Watchlist, Payment
@@ -21,7 +20,7 @@ from django.contrib.auth import logout
 from django.contrib.auth import login as auth_login
 from decimal import Decimal
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 FUND_AMOUNTS = [Decimal('500'), Decimal('1000'), Decimal('2000'), Decimal('5000')]
 
 
@@ -338,58 +337,76 @@ def forecast(request, stock_id):
 
 @login_required(login_url='/login/')
 def add_funds(request):
-    return render(request, 'stock/add_funds.html', {'amounts': FUND_AMOUNTS})
+    context = {
+        'amounts': FUND_AMOUNTS,
+        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+    }
+    return render(request, 'stock/add_funds.html', context)
 
 
 @login_required(login_url='/login/')
-def create_checkout_session(request):
+def create_order(request):
     if request.method != 'POST':
-        return redirect('add_funds')
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 
     try:
         amount = Decimal(request.POST.get('amount', '0'))
     except Exception:
-        messages.error(request, 'Invalid amount.')
-        return redirect('add_funds')
+        return JsonResponse({'error': 'Invalid amount.'}, status=400)
 
     if amount <= 0:
-        messages.error(request, 'Invalid amount.')
-        return redirect('add_funds')
+        return JsonResponse({'error': 'Invalid amount.'}, status=400)
 
-    session = stripe.checkout.Session.create(
-        payment_method_types=['card'],
-        line_items=[{
-            'price_data': {
-                'currency': 'usd',
-                'product_data': {'name': 'Portfolio budget top-up'},
-                'unit_amount': int(amount * 100),
-            },
-            'quantity': 1,
-        }],
-        mode='payment',
-        success_url=request.build_absolute_uri(reverse('payment_success')) + '?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url=request.build_absolute_uri(reverse('add_funds')),
-        client_reference_id=str(request.user.user_id),
-    )
+    order = razorpay_client.order.create({
+        'amount': int(amount * 100),  # paise
+        'currency': 'INR',
+        'payment_capture': 1,
+    })
 
-    Payment.objects.create(user=request.user, amount=amount, stripe_session_id=session.id)
+    Payment.objects.create(user=request.user, amount=amount, razorpay_order_id=order['id'])
 
-    return redirect(session.url)
+    return JsonResponse({
+        'order_id': order['id'],
+        'amount': order['amount'],
+        'currency': order['currency'],
+        'key_id': settings.RAZORPAY_KEY_ID,
+    })
+
+
+@login_required(login_url='/login/')
+def verify_payment(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+    order_id = request.POST.get('razorpay_order_id')
+    payment_id = request.POST.get('razorpay_payment_id')
+    signature = request.POST.get('razorpay_signature')
+
+    payment = get_object_or_404(Payment, razorpay_order_id=order_id, user=request.user)
+
+    try:
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature,
+        })
+    except razorpay.errors.SignatureVerificationError:
+        return JsonResponse({'error': 'Payment verification failed.'}, status=400)
+
+    if not payment.success:
+        payment.success = True
+        payment.razorpay_payment_id = payment_id
+        payment.save()
+        request.user.budget += payment.amount
+        request.user.save()
+
+    return JsonResponse({'status': 'ok'})
 
 
 @login_required(login_url='/login/')
 def payment_success(request):
-    session_id = request.GET.get('session_id')
-    payment = get_object_or_404(Payment, stripe_session_id=session_id, user=request.user)
-
-    if not payment.success:
-        session = stripe.checkout.Session.retrieve(session_id)
-        if session.payment_status == 'paid':
-            payment.success = True
-            payment.save()
-            request.user.budget += payment.amount
-            request.user.save()
-
+    order_id = request.GET.get('order_id')
+    payment = get_object_or_404(Payment, razorpay_order_id=order_id, user=request.user)
     return render(request, 'stock/payment_success.html', {'payment': payment})
 
 
