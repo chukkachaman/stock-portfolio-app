@@ -145,13 +145,14 @@ class UserSettings(models.Model):
         return f"{self.setting_name} - {self.user.username}"
 
 
-# Payment model - tracks Stripe Checkout top-ups of a user's virtual budget
+# Payment model - tracks Razorpay Checkout top-ups of a user's virtual budget
 class Payment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    stripe_session_id = models.CharField(max_length=255, unique=True)
+    razorpay_order_id = models.CharField(max_length=255, unique=True)
+    razorpay_payment_id = models.CharField(max_length=255, blank=True, null=True)
     success = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.user.username} - ${self.amount} - {'paid' if self.success else 'pending'}"
+        return f"{self.user.username} - Rs.{self.amount} - {'paid' if self.success else 'pending'}"
