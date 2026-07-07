@@ -10,31 +10,83 @@
     <title>Add Funds - Pro Trader X</title>
     <link rel="stylesheet" href="{% static 'stock/css/add_funds.css' %}" type="text/css" media="screen">
     <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body style="background-image: url('{% static 'stock/images/bg.jpg' %}'); background-size: cover; background-position: center;">
 
 <section class="container">
     <h2 class="heading">Add Funds to Your Budget</h2>
 
-    {% if messages %}
-        {% for message in messages %}
-        <p class="error-message">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
+    <p id="status-message" class="error-message"></p>
 
     <p class="meta-row">Current budget: <strong>${{ user.budget }}</strong></p>
-    <p class="meta-row">Payments are processed by Stripe Checkout in test mode - no real charge occurs.</p>
+    <p class="meta-row">Payments are processed by Razorpay in test mode - no real charge occurs.</p>
 
     <div class="amounts-grid">
         {% for amount in amounts %}
-        <form method="POST" action="{% url 'create_checkout_session' %}">
-            {% csrf_token %}
-            <input type="hidden" name="amount" value="{{ amount }}">
-            <button type="submit" class="amount-btn">+ ${{ amount }}</button>
-        </form>
+        <button type="button" class="amount-btn" data-amount="{{ amount }}">+ Rs {{ amount }}</button>
         {% endfor %}
     </div>
 </section>
+
+<script>
+document.querySelectorAll('.amount-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        const amount = this.dataset.amount;
+        const statusEl = document.getElementById('status-message');
+        statusEl.textContent = '';
+
+        fetch("{% url 'create_order' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'amount=' + encodeURIComponent(amount)
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.error) {
+                statusEl.textContent = data.error;
+                return;
+            }
+
+            const rzp = new Razorpay({
+                key: data.key_id,
+                amount: data.amount,
+                currency: data.currency,
+                name: 'Pro Trader X',
+                description: 'Portfolio budget top-up',
+                order_id: data.order_id,
+                theme: { color: '#6366f1' },
+                handler: function (response) {
+                    fetch("{% url 'verify_payment' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams(response).toString()
+                    })
+                    .then(function (res) { return res.json(); })
+                    .then(function (result) {
+                        if (result.status === 'ok') {
+                            window.location.href = "{% url 'payment_success' %}?order_id=" + data.order_id;
+                        } else {
+                            statusEl.textContent = result.error || 'Payment verification failed.';
+                        }
+                    });
+                }
+            });
+
+            rzp.open();
+        })
+        .catch(function () {
+            statusEl.textContent = 'Something went wrong starting the payment.';
+        });
+    });
+});
+</script>
 
 </body>
 </html>
