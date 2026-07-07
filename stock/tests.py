@@ -1,3 +1,5 @@
+from decimal import Decimal
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
@@ -6,7 +8,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .forecasting import generate_forecast
-from .models import Portfolio, Stock, User
+from .models import Payment, Portfolio, Stock, User
 
 
 def _fake_history(days=90, start_price=100.0):
@@ -92,3 +94,69 @@ class AuthTests(TestCase):
             "password": "correcthorsebattery",
         })
         self.assertEqual(response.status_code, 302)
+
+
+class PaymentTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            email="trader@example.com", username="trader", password="pw12345"
+        )
+        self.user.refresh_from_db()
+        Portfolio.objects.create(user=self.user)
+        self.client.force_login(self.user)
+
+    def test_add_funds_page_lists_amounts(self):
+        response = self.client.get(reverse("add_funds"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "500")
+
+    @patch("stock.views.stripe.checkout.Session.create")
+    def test_create_checkout_session_redirects_to_stripe_and_records_pending_payment(self, mock_create):
+        mock_create.return_value = SimpleNamespace(id="cs_test_123", url="https://checkout.stripe.com/pay/cs_test_123")
+
+        response = self.client.post(reverse("create_checkout_session"), {"amount": "1000"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "https://checkout.stripe.com/pay/cs_test_123")
+
+        payment = Payment.objects.get(stripe_session_id="cs_test_123")
+        self.assertEqual(payment.user, self.user)
+        self.assertEqual(payment.amount, Decimal("1000"))
+        self.assertFalse(payment.success)
+
+    def test_create_checkout_session_rejects_invalid_amount(self):
+        response = self.client.post(reverse("create_checkout_session"), {"amount": "-5"})
+        self.assertRedirects(response, reverse("add_funds"))
+        self.assertEqual(Payment.objects.count(), 0)
+
+    @patch("stock.views.stripe.checkout.Session.retrieve")
+    def test_payment_success_credits_budget_once_when_paid(self, mock_retrieve):
+        mock_retrieve.return_value = SimpleNamespace(payment_status="paid")
+        payment = Payment.objects.create(user=self.user, amount=Decimal("1000"), stripe_session_id="cs_test_456")
+        starting_budget = self.user.budget
+
+        response = self.client.get(reverse("payment_success") + "?session_id=cs_test_456")
+        self.assertEqual(response.status_code, 200)
+
+        self.user.refresh_from_db()
+        payment.refresh_from_db()
+        self.assertTrue(payment.success)
+        self.assertEqual(self.user.budget, starting_budget + Decimal("1000"))
+
+        # Visiting the success page again must not double-credit the budget.
+        self.client.get(reverse("payment_success") + "?session_id=cs_test_456")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.budget, starting_budget + Decimal("1000"))
+        mock_retrieve.assert_called_once()
+
+    @patch("stock.views.stripe.checkout.Session.retrieve")
+    def test_payment_success_does_not_credit_budget_when_unpaid(self, mock_retrieve):
+        mock_retrieve.return_value = SimpleNamespace(payment_status="unpaid")
+        Payment.objects.create(user=self.user, amount=Decimal("1000"), stripe_session_id="cs_test_789")
+        starting_budget = self.user.budget
+
+        self.client.get(reverse("payment_success") + "?session_id=cs_test_789")
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.budget, starting_budget)
