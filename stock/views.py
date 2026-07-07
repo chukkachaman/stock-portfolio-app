@@ -354,8 +354,8 @@ def create_order(request):
     except Exception:
         return JsonResponse({'error': 'Invalid amount.'}, status=400)
 
-    if amount <= 0:
-        return JsonResponse({'error': 'Invalid amount.'}, status=400)
+    if amount < Decimal('100'):
+        return JsonResponse({'error': 'Minimum amount is Rs 100.'}, status=400)
 
     order = razorpay_client.order.create({
         'amount': int(amount * 100),  # paise
