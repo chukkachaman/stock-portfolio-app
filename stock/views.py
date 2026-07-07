@@ -4,7 +4,6 @@ import cloudinary.uploader
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .forms import RegisterForm, UserUpdateForm
-from django.contrib.auth.hashers import make_password
 from django.db.models import F, ExpressionWrapper, DecimalField
 from .models import Stock, Portfolio, Transaction, User, Watchlist
 from django.http import JsonResponse
@@ -181,15 +180,13 @@ def login(request):
         
         username = request.POST.get('username')
         password = request.POST.get('password')
-        print(username, password)
 
         if (User.objects.filter(username=username).exists()) == False:
             messages.error(request, "Invalid Username")
             return render(request, 'stock/login.html')
         user = User.objects.get(username=username)
-        
-        user_password = User.objects.get(username=username).password
-        if user_password == password:
+
+        if user.check_password(password):
             auth_login(request, user)
             return redirect(home)  # Redirect to the home page after successful login
         else:
@@ -224,16 +221,15 @@ def register(request):
             messages.error(request, "Email is already registered.")
             return render(request, 'stock/register.html')
 
-        # Create the new user
-        new_user = User(
+        # Create the new user (create_user() hashes the password before saving)
+        new_user = User.objects.create_user(
             email=email,
             username=username,
-            password=password,  # The manager handles password hashing
+            password=password,
             first_name=first_name,
             last_name=last_name,
             phone=phone,
         )
-        new_user.save() 
         new_portfolio = Portfolio(
             user = new_user
 
