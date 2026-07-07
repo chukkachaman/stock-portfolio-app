@@ -59,3 +59,36 @@ class ForecastViewTests(TestCase):
     def test_forecast_view_requires_login(self):
         response = self.client.get(reverse("forecast", args=[self.stock.id]))
         self.assertEqual(response.status_code, 302)
+
+
+class AuthTests(TestCase):
+    def test_register_hashes_password_and_allows_login(self):
+        response = self.client.post(reverse("register"), {
+            "first-name": "Test",
+            "last-name": "Trader",
+            "username": "testtrader",
+            "password": "correcthorsebattery",
+            "password-confirm": "correcthorsebattery",
+            "phone": "1234567890",
+            "email": "testtrader@example.com",
+        })
+        self.assertEqual(response.status_code, 302)
+
+        user = User.objects.get(username="testtrader")
+        self.assertNotEqual(user.password, "correcthorsebattery")
+        self.assertTrue(user.password.startswith("pbkdf2_") or "$" in user.password)
+
+        login_ok = self.client.login(username="testtrader", password="wrongpassword")
+        self.assertFalse(login_ok)
+
+        response = self.client.post(reverse("login"), {
+            "username": "testtrader",
+            "password": "wrongpassword",
+        })
+        self.assertContains(response, "Invalid password")
+
+        response = self.client.post(reverse("login"), {
+            "username": "testtrader",
+            "password": "correcthorsebattery",
+        })
+        self.assertEqual(response.status_code, 302)
