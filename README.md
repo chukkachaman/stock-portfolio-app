@@ -12,6 +12,7 @@ A full-stack stock trading simulation platform built with Django. Users get a **
 - **Sell Stocks** — Sell any partial or full quantity of your holdings
 - **Portfolio Dashboard** — Interactive charts (donut + bar) showing allocation and profit/loss
 - **Price Forecast** — XGBoost-based short-term price prediction per stock, trained on trailing-window lag features from Yahoo Finance history
+- **Add Funds** — Top up your virtual budget via Stripe Checkout (test mode)
 - **Watchlist** — Save stocks to track without buying
 - **Transaction History** — Full log of all buys and sells
 - **Profile Page** — Update your profile info and picture
@@ -28,6 +29,7 @@ A full-stack stock trading simulation platform built with Django. Users get a **
 | Charts | Chart.js |
 | Live Prices | yfinance (Yahoo Finance) |
 | Forecasting | XGBoost, scikit-learn, Pandas, NumPy |
+| Payments | Stripe Checkout |
 | Image Handling | Pillow |
 
 ---
@@ -104,6 +106,11 @@ stock-portfolio-app/
 ```
 
 ---
+
+## Environment Variables
+
+- `STRIPE_SECRET_KEY` — Stripe **test-mode** secret key (`sk_test_...`), required for the Add Funds flow to work
+- `STRIPE_PUBLISHABLE_KEY` — Stripe test-mode publishable key (`pk_test_...`)
 
 ## Future Plans
 
