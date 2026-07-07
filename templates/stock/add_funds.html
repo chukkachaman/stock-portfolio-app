@@ -1,0 +1,41 @@
+{% extends './navbar.html' %}
+{% load static %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Funds - Pro Trader X</title>
+    <link rel="stylesheet" href="{% static 'stock/css/add_funds.css' %}" type="text/css" media="screen">
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen">
+</head>
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}'); background-size: cover; background-position: center;">
+
+<section class="container">
+    <h2 class="heading">Add Funds to Your Budget</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+        <p class="error-message">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <p class="meta-row">Current budget: <strong>${{ user.budget }}</strong></p>
+    <p class="meta-row">Payments are processed by Stripe Checkout in test mode - no real charge occurs.</p>
+
+    <div class="amounts-grid">
+        {% for amount in amounts %}
+        <form method="POST" action="{% url 'create_checkout_session' %}">
+            {% csrf_token %}
+            <input type="hidden" name="amount" value="{{ amount }}">
+            <button type="submit" class="amount-btn">+ ${{ amount }}</button>
+        </form>
+        {% endfor %}
+    </div>
+</section>
+
+</body>
+</html>
+{% endblock body %}

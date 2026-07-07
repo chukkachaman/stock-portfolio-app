@@ -1,0 +1,32 @@
+{% extends './navbar.html' %}
+{% load static %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - Pro Trader X</title>
+    <link rel="stylesheet" href="{% static 'stock/css/add_funds.css' %}" type="text/css" media="screen">
+    <link rel="stylesheet" href="{% static 'stock/css/navbar.css' %}" type="text/css" media="screen">
+</head>
+<body style="background-image: url('{% static 'stock/images/bg.jpg' %}'); background-size: cover; background-position: center;">
+
+<section class="container">
+    {% if payment.success %}
+        <h2 class="heading">Payment Successful</h2>
+        <p class="meta-row">${{ payment.amount }} was added to your budget.</p>
+        <p class="meta-row">New budget: <strong>${{ user.budget }}</strong></p>
+    {% else %}
+        <h2 class="heading">Payment Not Confirmed</h2>
+        <p class="meta-row">We couldn't confirm this payment with Stripe yet. If you completed checkout, please refresh in a moment.</p>
+    {% endif %}
+    <div class="meta-row">
+        <a href="/portfolio/">Back to Portfolio</a>
+    </div>
+</section>
+
+</body>
+</html>
+{% endblock body %}
