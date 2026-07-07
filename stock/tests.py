@@ -1,9 +1,9 @@
 from decimal import Decimal
-from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
+import razorpay
 from django.test import TestCase, Client
 from django.urls import reverse
 
@@ -111,52 +111,67 @@ class PaymentTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "500")
 
-    @patch("stock.views.stripe.checkout.Session.create")
-    def test_create_checkout_session_redirects_to_stripe_and_records_pending_payment(self, mock_create):
-        mock_create.return_value = SimpleNamespace(id="cs_test_123", url="https://checkout.stripe.com/pay/cs_test_123")
+    @patch("stock.views.razorpay_client.order.create")
+    def test_create_order_records_pending_payment(self, mock_create):
+        mock_create.return_value = {"id": "order_test_123", "amount": 100000, "currency": "INR"}
 
-        response = self.client.post(reverse("create_checkout_session"), {"amount": "1000"})
+        response = self.client.post(reverse("create_order"), {"amount": "1000"})
 
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "https://checkout.stripe.com/pay/cs_test_123")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["order_id"], "order_test_123")
 
-        payment = Payment.objects.get(stripe_session_id="cs_test_123")
+        payment = Payment.objects.get(razorpay_order_id="order_test_123")
         self.assertEqual(payment.user, self.user)
         self.assertEqual(payment.amount, Decimal("1000"))
         self.assertFalse(payment.success)
 
-    def test_create_checkout_session_rejects_invalid_amount(self):
-        response = self.client.post(reverse("create_checkout_session"), {"amount": "-5"})
-        self.assertRedirects(response, reverse("add_funds"))
+    def test_create_order_rejects_invalid_amount(self):
+        response = self.client.post(reverse("create_order"), {"amount": "-5"})
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(Payment.objects.count(), 0)
 
-    @patch("stock.views.stripe.checkout.Session.retrieve")
-    def test_payment_success_credits_budget_once_when_paid(self, mock_retrieve):
-        mock_retrieve.return_value = SimpleNamespace(payment_status="paid")
-        payment = Payment.objects.create(user=self.user, amount=Decimal("1000"), stripe_session_id="cs_test_456")
+    @patch("stock.views.razorpay_client.utility.verify_payment_signature")
+    def test_verify_payment_credits_budget_once_on_valid_signature(self, mock_verify):
+        mock_verify.return_value = True
+        payment = Payment.objects.create(user=self.user, amount=Decimal("1000"), razorpay_order_id="order_test_456")
         starting_budget = self.user.budget
 
-        response = self.client.get(reverse("payment_success") + "?session_id=cs_test_456")
+        response = self.client.post(reverse("verify_payment"), {
+            "razorpay_order_id": "order_test_456",
+            "razorpay_payment_id": "pay_test_456",
+            "razorpay_signature": "sig_test_456",
+        })
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
 
         self.user.refresh_from_db()
         payment.refresh_from_db()
         self.assertTrue(payment.success)
+        self.assertEqual(payment.razorpay_payment_id, "pay_test_456")
         self.assertEqual(self.user.budget, starting_budget + Decimal("1000"))
 
-        # Visiting the success page again must not double-credit the budget.
-        self.client.get(reverse("payment_success") + "?session_id=cs_test_456")
+        # Calling verify again (e.g. a retried request) must not double-credit the budget.
+        self.client.post(reverse("verify_payment"), {
+            "razorpay_order_id": "order_test_456",
+            "razorpay_payment_id": "pay_test_456",
+            "razorpay_signature": "sig_test_456",
+        })
         self.user.refresh_from_db()
         self.assertEqual(self.user.budget, starting_budget + Decimal("1000"))
-        mock_retrieve.assert_called_once()
 
-    @patch("stock.views.stripe.checkout.Session.retrieve")
-    def test_payment_success_does_not_credit_budget_when_unpaid(self, mock_retrieve):
-        mock_retrieve.return_value = SimpleNamespace(payment_status="unpaid")
-        Payment.objects.create(user=self.user, amount=Decimal("1000"), stripe_session_id="cs_test_789")
+    @patch("stock.views.razorpay_client.utility.verify_payment_signature")
+    def test_verify_payment_rejects_bad_signature(self, mock_verify):
+        mock_verify.side_effect = razorpay.errors.SignatureVerificationError("bad signature")
+        Payment.objects.create(user=self.user, amount=Decimal("1000"), razorpay_order_id="order_test_789")
         starting_budget = self.user.budget
 
-        self.client.get(reverse("payment_success") + "?session_id=cs_test_789")
+        response = self.client.post(reverse("verify_payment"), {
+            "razorpay_order_id": "order_test_789",
+            "razorpay_payment_id": "pay_test_789",
+            "razorpay_signature": "tampered_signature",
+        })
+        self.assertEqual(response.status_code, 400)
 
         self.user.refresh_from_db()
         self.assertEqual(self.user.budget, starting_budget)
