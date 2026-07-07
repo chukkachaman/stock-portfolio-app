@@ -1,11 +1,14 @@
 import json
 import os
 import cloudinary.uploader
+import stripe
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
+from django.urls import reverse
 from .forms import RegisterForm, UserUpdateForm
 from django.db.models import F, ExpressionWrapper, DecimalField
-from .models import Stock, Portfolio, Transaction, User, Watchlist
+from .models import Stock, Portfolio, Transaction, User, Watchlist, Payment
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .utils import fetch_and_load_stock_data, fetch_live_prices
@@ -17,6 +20,9 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth import login as auth_login
 from decimal import Decimal
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+FUND_AMOUNTS = [Decimal('500'), Decimal('1000'), Decimal('2000'), Decimal('5000')]
 
 
 @login_required(login_url='/login/')
@@ -328,6 +334,63 @@ def forecast(request, stock_id):
         'forecast_json': json.dumps(result.get('forecast', [])),
     }
     return render(request, 'stock/forecast.html', context)
+
+
+@login_required(login_url='/login/')
+def add_funds(request):
+    return render(request, 'stock/add_funds.html', {'amounts': FUND_AMOUNTS})
+
+
+@login_required(login_url='/login/')
+def create_checkout_session(request):
+    if request.method != 'POST':
+        return redirect('add_funds')
+
+    try:
+        amount = Decimal(request.POST.get('amount', '0'))
+    except Exception:
+        messages.error(request, 'Invalid amount.')
+        return redirect('add_funds')
+
+    if amount <= 0:
+        messages.error(request, 'Invalid amount.')
+        return redirect('add_funds')
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[{
+            'price_data': {
+                'currency': 'usd',
+                'product_data': {'name': 'Portfolio budget top-up'},
+                'unit_amount': int(amount * 100),
+            },
+            'quantity': 1,
+        }],
+        mode='payment',
+        success_url=request.build_absolute_uri(reverse('payment_success')) + '?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url=request.build_absolute_uri(reverse('add_funds')),
+        client_reference_id=str(request.user.user_id),
+    )
+
+    Payment.objects.create(user=request.user, amount=amount, stripe_session_id=session.id)
+
+    return redirect(session.url)
+
+
+@login_required(login_url='/login/')
+def payment_success(request):
+    session_id = request.GET.get('session_id')
+    payment = get_object_or_404(Payment, stripe_session_id=session_id, user=request.user)
+
+    if not payment.success:
+        session = stripe.checkout.Session.retrieve(session_id)
+        if session.payment_status == 'paid':
+            payment.success = True
+            payment.save()
+            request.user.budget += payment.amount
+            request.user.save()
+
+    return render(request, 'stock/payment_success.html', {'payment': payment})
 
 
 @login_required(login_url='/login/')

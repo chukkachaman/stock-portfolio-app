@@ -19,6 +19,9 @@ urlpatterns = [
     path('remove_from_watchlist/', views.remove_from_watchlist, name='remove_from_watchlist'),
     path('sell/<int:transaction_id>/', views.sell_stock, name='sell-stock'),
     path('forecast/<int:stock_id>/', views.forecast, name='forecast'),
+    path('add-funds/', views.add_funds, name='add_funds'),
+    path('create-checkout-session/', views.create_checkout_session, name='create_checkout_session'),
+    path('payment-success/', views.payment_success, name='payment_success'),
     
 
 ]
